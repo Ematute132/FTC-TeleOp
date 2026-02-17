@@ -176,4 +176,124 @@ class MyOpMode : NextFTCOpMode() {
 
 ---
 
+## 11. LimeLight 3A (Vision)
+
+**Website:** https://limelightvision.io/products/limelight-3a
+**Docs:** https://docs.limelightvision.io/docs-limelight/
+**FTC Javadoc:** https://javadoc.io/doc/org.firstinspires.ftc/Hardware/latest/com/qualcomm/hardware/limelightvision/package-summary.html
+
+### Hardware Specs
+- **Processor:** Quad-core Cortex-A72 @ 1.5GHz
+- **Resolution:** 90 FPS @ 640x480, 60 FPS @ 1280x960
+- **Mounting:** REV/GoBilda threaded holes, VHB tape, or zip ties
+- **Connection:** USB-C to Control Hub
+
+### Key Features
+- AprilTag tracking & robot localization
+- Color blob detection
+- Neural network / custom Python pipelines
+- Full-field pose estimation (MegaTag1 & MegaTag2)
+- Browser-based configuration
+
+---
+
+### Basic Setup (FTC)
+
+```kotlin
+import com.qualcomm.hardware.limelightvision.*
+
+// Initialize
+limelight = hardwareMap.get(Limelight3A::class.java, "limelight")
+limelight.setPollRateHz(100)  // Query rate
+limelight.start()
+
+// Get results
+val result = limelight.latestResult
+if (result != null && result.isValid) {
+    val tx = result.tx  // Horizontal offset (degrees)
+    val ty = result.ty  // Vertical offset (degrees)
+    val ta = result.ta  // Target area (0-100%)
+    val botpose = result.botpose  // Robot pose (MegaTag)
+}
+```
+
+### Steering/PID Control
+
+LimeLight doesn't have built-in PID in the sensor — you implement steering in code:
+
+```kotlin
+// Simple P-controller for steering
+val steer = tx * kP  // kP typically 0.03-0.05
+
+// Full PID example
+class SteeringCommand(val kP: Double, val kI: Double, val kD: Double) {
+    private var lastError = 0.0
+    private var integral = 0.0
+    
+    fun calculate(tx: Double): Double {
+        val error = tx
+        integral += error
+        val derivative = error - lastError
+        lastError = error
+        
+        return kP * error + kI * integral + kD * derivative
+    }
+}
+
+// Usage: steer = steeringCommand.calculate(tx)
+```
+
+**Typical Values:**
+| Parameter | Range | Description |
+|-----------|-------|-------------|
+| kP | 0.02 - 0.08 | Proportional gain |
+| kI | 0.0 - 0.01 | Integral gain (often 0) |
+| kD | 0.1 - 0.5 | Derivative gain |
+
+### Pipeline Settings (Web Interface)
+
+| Setting | Description |
+|---------|-------------|
+| **Pipeline Type** | AprilTags, Neural Networks, Color, Python |
+| **Camera Exposure** | Lower = less motion blur, more noise |
+| **Threshold** | Color/contrast thresholds for detection |
+| **Quality Threshold** | Filters spurious detections |
+| **Full 3D** | Enables botPose (robot localization) |
+| **Camera Offset** | Position relative to robot center |
+
+### MegaTag2 (Pose Fusion)
+
+MegaTag2 fuses IMU data with AprilTag for better accuracy:
+
+```kotlin
+// Update with IMU heading
+val robotYaw = imu.angularOrientation.firstAngle
+limelight.updateRobotOrientation(robotYaw)
+
+// Get fused pose
+val botpose = result.botpose
+```
+
+### NetworkTable Values
+
+Key values available via NetworkTables:
+
+| Key | Description |
+|-----|-------------|
+| `tx` | Horizontal offset (degrees) |
+| `ty` | Vertical offset (degrees) |
+| `ta` | Target area (%) |
+| `tid` | AprilTag ID |
+| `botpose` | Robot position (x, y, z, roll, pitch, yaw) |
+| `pipeline` | Current pipeline index |
+
+### Tuning Tips
+
+1. **Exposure:** Set as low as possible while still detecting
+2. **Quality Threshold:** Increase to filter noise
+3. **LED Brightness:** Match to environment
+4. **Multiple Tags:** Use for redundancy, single for speed
+
+---
+
 *Last updated: Feb 2026*
