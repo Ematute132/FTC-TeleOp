@@ -7,7 +7,6 @@ import com.pedropathing.geometry.Pose
 import com.pedropathing.paths.PathChain
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import dev.nextftc.core.commands.delays.Delay
-import dev.nextftc.core.commands.groups.ParallelGroup
 import dev.nextftc.core.commands.groups.SequentialGroup
 import dev.nextftc.core.commands.utility.InstantCommand
 import dev.nextftc.core.components.BindingsComponent
@@ -24,6 +23,8 @@ import org.firstinspires.ftc.teamcode.Next.Shooter.FlyWheel
 import org.firstinspires.ftc.teamcode.Next.Shooter.Turret
 import org.firstinspires.ftc.teamcode.Shooter.Hood.Hood
 import org.firstinspires.ftc.teamcode.Shooter.Limelight.Limelight
+import org.firstinspires.ftc.teamcode.Systems.ShooterCommands.shootFar
+import org.firstinspires.ftc.teamcode.Systems.IntakeCommands.runFor
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants
 
 @Configurable
@@ -59,65 +60,65 @@ class AutoBlue21 : NextFTCOpMode() {
         val main = SequentialGroup(
             // Shoot preload from starting score pose
             InstantCommand { FlyWheel.setVelocity(preloadVelocity) },
-            InstantCommand { Hood.far() },
+            ShooterCommands.farAuton,
             InstantCommand { Turret.lock() },
             Delay(0.4),
-            InstantCommand { Gate.open() },
-            InstantCommand { Intake.run() },
+            Gate.open,
+            Intake.run,
             Delay(preloadShootDelay),
-            InstantCommand { Gate.close() },
+            Gate.close,
 
             // intakelow: drive to low balls, intake, return, shoot
             FollowPath(paths[0], true, 1.0),
-            InstantCommand { Intake.run() },
+            Intake.run,
             Delay(shotIntakeDelay),
             InstantCommand { Intake.stop() },
             FollowPath(paths[1], true, 1.0),
-            InstantCommand { Hood.far() },
+            ShooterCommands.farAuton,
             Delay(0.4),
-            InstantCommand { Gate.open() },
-            InstantCommand { Intake.run() },
+            Gate.open,
+            Intake.run,
             Delay(shotShootDelay),
-            InstantCommand { Gate.close() },
+            Gate.close,
 
             // intakespike: drive to spike balls, intake, return, shoot
             FollowPath(paths[2], true, 1.0),
-            InstantCommand { Intake.run() },
+            Intake.run,
             Delay(shotIntakeDelay),
             InstantCommand { Intake.stop() },
             FollowPath(paths[3], true, 1.0),
-            InstantCommand { Hood.far() },
+            ShooterCommands.farAuton,
             Delay(0.4),
-            InstantCommand { Gate.open() },
-            InstantCommand { Intake.run() },
+            Gate.open,
+            Intake.run,
             Delay(shotShootDelay),
-            InstantCommand { Gate.close() },
+            Gate.close,
 
             // intakehigh: drive to high balls, intake, return, shoot
             FollowPath(paths[4], true, 1.0),
-            InstantCommand { Intake.run() },
+            Intake.run,
             Delay(shotIntakeDelay),
             InstantCommand { Intake.stop() },
             FollowPath(paths[5], true, 1.0),
-            InstantCommand { Hood.far() },
+            ShooterCommands.farAuton,
             Delay(0.4),
-            InstantCommand { Gate.open() },
-            InstantCommand { Intake.run() },
+            Gate.open,
+            Intake.run,
             Delay(shotShootDelay),
-            InstantCommand { Gate.close() },
+            Gate.close,
 
             // intakemid: drive to mid balls, intake, return, shoot
             FollowPath(paths[6], true, 1.0),
-            InstantCommand { Intake.run() },
+            Intake.run,
             Delay(shotIntakeDelay),
             InstantCommand { Intake.stop() },
             FollowPath(paths[7], true, 1.0),
-            InstantCommand { Hood.far() },
+            ShooterCommands.farAuton,
             Delay(0.4),
-            InstantCommand { Gate.open() },
-            InstantCommand { Intake.run() },
+            Gate.open,
+            Intake.run,
             Delay(shotShootDelay),
-            InstantCommand { Gate.close() },
+            Gate.close,
 
             InstantCommand { FlyWheel.setVelocity(0.0) }
         )
